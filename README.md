@@ -12,7 +12,7 @@ This project aims at helping me become familiar with the datasets chosen, by sel
 
 ##Files in the Repository
 
-- raw.githubusercontent.com_UBC-STAT_stat545.stat.ubc.ca_master_content_mini-project_mini-project-1_files/figure-gfm: Contains raw.githubusercontent.com_UBC-STAT_stat545.stat.ubc.ca_master_content_mini-project_mini-project-1_files/figure-gfm/unnamed-chunk-3-1.png and 
+- raw.githubusercontent.com_UBC-STAT_stat545.stat.ubc.ca_master_content_mini-project_mini-project-1_files/figure-gfm: Contains nnamed-chunk-3-1.png and nnamed-chunk-3-1.png which are figures for the plots in exercices 1 and 2 in Task 2.1 respectively 
 - README.md
 - raw.githubusercontent.com_UBC-STAT_stat545.stat.ubc.ca_master_content_mini-project_mini-project-1.Rmd
 - raw.githubusercontent.com_UBC-STAT_stat545.stat.ubc.ca_master_content_mini-project_mini-project-1.md
