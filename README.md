@@ -9,6 +9,7 @@ Become familiar with manipulating and summarizing data in tibbles using dplyr, w
 
 
 **Table of Contents**
+
 Description
 Files in the Repository
 How to Run Code
@@ -17,10 +18,7 @@ How to Run Code
 Files in the Repository
 
 raw.githubusercontent.com_UBC-STAT_stat545.stat.ubc.ca_master_content_mini-project_mini-project-1_files/figure-gfm \\ 
-
 README.md
-
 raw.githubusercontent.com_UBC-STAT_stat545.stat.ubc.ca_master_content_mini-project_mini-project-1.Rmd
-
 raw.githubusercontent.com_UBC-STAT_stat545.stat.ubc.ca_master_content_mini-project_mini-project-1.md
 
