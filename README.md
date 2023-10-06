@@ -15,6 +15,8 @@ How to Run Code
 
 
 Files in the Repository
+
+raw.githubusercontent.com_UBC-STAT_stat545.stat.ubc.ca_master_content_mini-project_mini-project-1_files/figure-gfm
 raw.githubusercontent.com_UBC-STAT_stat545.stat.ubc.ca_master_content_mini-project_mini-project-1.Rmd
 
 
