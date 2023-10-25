@@ -23,7 +23,7 @@ library(tidyverse)
     ## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
     ## ✔ dplyr     1.1.3     ✔ readr     2.1.4
     ## ✔ forcats   1.0.0     ✔ stringr   1.5.0
-    ## ✔ ggplot2   3.4.3     ✔ tibble    3.2.1
+    ## ✔ ggplot2   3.4.4     ✔ tibble    3.2.1
     ## ✔ lubridate 1.9.2     ✔ tidyr     1.3.0
     ## ✔ purrr     1.0.2     
     ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
@@ -541,7 +541,7 @@ ggplot(grouped_data, aes(x = year, y = flow)) +
   ggtitle("Flow by Year")  # Title for the plot
 ```
 
-![](raw.githubusercontent.com_UBC-STAT_stat545.stat.ubc.ca_master_content_mini-project_mini-project-1_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+![](Mini_project_1_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
 2.  Create a new variable based on other variables in your data (only if
     it makes sense)
@@ -585,7 +585,7 @@ ggplot(cancer_sample, aes(x = fractal_dimension_mean, y = compactness_mean)) +
   ggtitle(paste("Scatter Plot\nCorrelation = ", round(correlation, 2)))
 ```
 
-![](raw.githubusercontent.com_UBC-STAT_stat545.stat.ubc.ca_master_content_mini-project_mini-project-1_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](Mini_project_1_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 5.  Filter observations in your data according to your own criteria.
     Think of what you’d like to explore - again, if this was the
