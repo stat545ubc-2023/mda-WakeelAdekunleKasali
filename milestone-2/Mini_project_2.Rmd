@@ -1,0 +1,532 @@
+---
+title: "Milestone 2"
+author: "Wakeel Kasali"
+date: "2023-10-24"
+output:
+  github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Mini Data Analysis Milestone 2
+To complete this milestone, you can either edit this .rmd file directly. Fill in the sections that are commented out with <!--- start your work here--->. When you are done, make sure to knit to an .md file by changing the output in the YAML header to github_document, before submitting a tagged release on canvas.
+
+Welcome to the rest of your mini data analysis project!
+In Milestone 1, you explored your data. and came up with research questions. This time, we will finish up our mini data analysis and obtain results for your data by:
+
+Making summary tables and graphs
+Manipulating special data types in R: factors and/or dates and times.
+Fitting a model object to your data, and extract a result.
+Reading and writing data as separate files.
+We will also explore more in depth the concept of tidy data.
+
+NOTE: The main purpose of the mini data analysis is to integrate what you learn in class in an analysis. Although each milestone provides a framework for you to conduct your analysis, it’s possible that you might find the instructions too rigid for your data set. If this is the case, you may deviate from the instructions – just make sure you’re demonstrating a wide range of tools and techniques taught in this class.
+
+Instructions
+To complete this milestone, edit this very .Rmd file directly. Fill in the sections that are tagged with <!--- start your work here--->.
+
+To submit this milestone, make sure to knit this .Rmd file to an .md file by changing the YAML output settings from output: html_document to output: github_document. Commit and push all of your work to your mini-analysis GitHub repository, and tag a release on GitHub. Then, submit a link to your tagged release on canvas.
+
+Points: This milestone is worth 50 points: 45 for your analysis, and 5 for overall reproducibility, cleanliness, and coherence of the Github submission.
+
+Research Questions: In Milestone 1, you chose two research questions to focus on. Wherever realistic, your work in this milestone should relate to these research questions whenever we ask for justification behind your work. In the case that some tasks in this milestone don’t align well with one of your research questions, feel free to discuss your results in the context of a different research question.
+
+Learning Objectives
+By the end of this milestone, you should:
+
+Understand what tidy data is, and how to create it using tidyr.
+Generate a reproducible and clear report using R Markdown.
+Manipulating special data types in R: factors and/or dates and times.
+Fitting a model object to your data, and extract a result.
+Reading and writing data as separate files.
+Setup
+Begin by loading your data and the tidyverse package below:
+```{r}
+library(datateachr) # <- might contain the data you picked!
+library(tidyverse)
+library(gridExtra)
+library(broom)
+library(here)
+```
+Task 1: Process and summarize your data
+From milestone 1, you should have an idea of the basic structure of your dataset (e.g. number of rows and columns, class types, etc.). Here, we will start investigating your data more in-depth using various data manipulation functions.
+
+1.1 (1 point)
+First, write out the 4 research questions you defined in milestone 1 were. This will guide your work through milestone 2:
+
+1.  How does the distribution of the “flow” variable change in every 10
+    years in the “flow_sample” dataset? This will break the year date to
+    every decade(ten years).This might involve using group_by(), select,
+    count(),summary() and pipe functions, including ggplot()
+
+2.  What is the relationship between year of construction and year of
+    registration in the apt_building dataset ? This will require plotting 
+    with ggplot.
+    NB: I am changing this to - How is the difference in year of registration
+    for different property-type?. This might involve filter(), group_by(),
+    summarise(), and geom-boxplot
+
+3.  What is the form of relationship - positive or negative - between
+    the fractal_dimension_mean and compactness_mean using
+    “cancer_sample”? This might attract coding for fitting regression
+    line.
+
+4.  For the purpose of urban planning and using vancouver_tree dataset,
+    what is the distribution pattern of trees in KENSINGTON-CEDAR
+    COTTAGE neighbourhood having a street_side_name that are even. This
+    would take filter(), select(), and some other dyplyr functions
+    including ggplot.
+    
+Here, we will investigate your data using various data manipulation and graphing functions.
+
+1.2 (8 points)
+Now, for each of your four research questions, choose one task from options 1-4 (summarizing), and one other task from 4-8 (graphing). You should have 2 tasks done for each research question (8 total). Make sure it makes sense to do them! (e.g. don’t use a numerical variables for a task that needs a categorical variable.). Comment on why each task helps (or doesn’t!) answer the corresponding research question.
+
+Ensure that the output of each operation is printed!
+
+Also make sure that you’re using dplyr and ggplot2 rather than base R. Outside of this project, you may find that you prefer using base R functions for certain tasks, and that’s just fine! But part of this project is for you to practice the tools we learned in class, which is dplyr and ggplot2.
+
+Summarizing:
+
+Compute the range, mean, and two other summary statistics of one numerical variable across the groups of one categorical variable from your data.
+
+```{r}
+
+# I filter out rows with NA in flow_sample
+flow_sample <- flow_sample %>%
+  filter(!is.na(flow))
+
+# Calculating four statistics for "flow" across groups defined by "extreme_type"
+summary_stats <- flow_sample %>%
+  group_by(extreme_type) %>%
+  summarize(
+    range = ifelse(n() > 0, max(flow) - min(flow), NA),
+    mean = mean(flow),
+    median = median(flow),
+    sd = sd(flow)
+  )
+
+# Print the summary statistics
+print(summary_stats)
+```
+#Comment: The mean and median help us understand the centrality, while range and standard deviation help us understand the spread of the of the categories for "extreme_type" variable.
+
+Compute the number of observations for at least one of your categorical variables. Do not use the function table()!
+```{r}
+head(apt_buildings)
+#Using apt_buildings dataset
+apt_buildings_filtered <- apt_buildings %>%
+  filter(!is.na(air_conditioning))
+
+num_observations <- apt_buildings_filtered %>%
+  group_by(air_conditioning) %>%
+  summarize(num_observations = n())
+
+# Print the result
+print(num_observations)
+write_csv(num_observations, here("Output", "num_observations_task1.2.csv"))
+```
+#Comment: This task helps us to visualize the number of buildings wth no airconditioning and number of buildings using different air_conditioning
+
+Create a categorical variable with 3 or more groups from an existing numerical variable. You can use this new variable in the other tasks! An example: age in years into “child, teen, adult, senior”.
+```{r}
+head(cancer_sample)
+#Using cancer_sample dataset
+
+cancer_sample_3 <- cancer_sample %>%
+  mutate(fractal_dimension_worst_levels = cut(fractal_dimension_worst,
+                                                breaks = c(0.05, 0.1, 0.15, 0.2, 0.21),
+                                                labels = c("Very Low", "Low", "Moderate", "High"),
+                                                right = FALSE)) %>%
+  select(ID, diagnosis, fractal_dimension_worst, fractal_dimension_worst_levels, everything())
+
+# View the updated dataset
+head(cancer_sample_3)
+
+```
+#comment: It helps us understand different levels for complexity of tumor boundaries indicated by "Fractal dimension worst" and their corresponding counts.
+
+
+Compute the proportion and counts in each category of one categorical variable across the groups of another categorical variable from your data. Do not use the function table()!
+```{r}
+head(vancouver_trees)
+
+#Using vancouver_trees dataset
+proportion_df <- vancouver_trees %>%
+  group_by(curb, root_barrier) %>%
+  summarise(count = n(), .groups = "drop_last") %>%
+  group_by(curb) %>%
+  mutate(proportion = count / sum(count), .groups = "drop_last")
+
+proportion_df
+
+```
+#comment: The output makes us know more about the distribution of root barriers based on whether they are found in curbed street or not
+
+
+Graphing:
+
+Create a graph of your choosing, make one of the axes logarithmic, and format the axes labels so that they are “pretty” or easier to read.
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+#Plotting distribution of "flow" variable in the "flow_sample" dataset
+filtered_flow_sample <- flow_sample %>%
+  filter(station_id == "05BB001" & extreme_type == "maximum")
+
+# Group data by year
+grouped_flow <- filtered_flow_sample %>%
+  group_by(year)
+
+flow_year_grouped <- grouped_flow %>%
+ mutate(grouped_year = paste0(floor((year - 1) / 10) * 10 + 1, "-", floor((year - 1) / 10) * 10 + 10)) %>%
+  group_by(grouped_year) %>%
+  summarise(flow_count = sum(flow, na.rm = TRUE))
+
+flow_year_grouped
+
+
+ggplot(flow_year_grouped, aes(x = grouped_year, y = flow_count)) +
+  geom_bar(stat = "identity", fill = "lightblue") +
+  labs(x = "Year Grouped", y = "Flow Count (log scale)", title = "Flow Count by Year Grouped") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_x_discrete(labels = function(x) gsub(" ", "\n", x)) +
+  scale_y_log10()
+```
+
+#comment: The chart enables us to visualize how flow behaves in every ten years. The year range 1911 - 1920 had the 
+#highest flow count.
+
+Make a graph where it makes sense to customize the alpha transparency.
+Using variables and/or tables you made in one of the “Summarizing” tasks:
+```{r}
+head(num_observations)
+
+# Create a bar plot with custom alpha transparency
+ggplot(num_observations, aes(x = air_conditioning, y = num_observations)) +
+  geom_bar(stat = "identity", fill = "lightgreen", alpha = 0.7) +
+  labs(x = "Air Conditioning Type", y = "Number of Observations", title = "Number of Observations by Air Conditioning Type") +
+  theme_minimal()
+```
+#Comment: The barchat of the airconditioning properties with their corresponding observations.
+
+Create a graph that has at least two geom layers.
+```{r}
+ggplot(flow_year_grouped, aes(x = grouped_year, y = flow_count)) +
+  geom_bar(stat = "identity", fill = "pink") +
+  geom_line(aes(group = 1), color = "brown", size = 1) +  # Add a red line plot
+  labs(x = "Year Grouped", y = "Flow Count", title = "Flow Count by Year Grouped") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_x_discrete(labels = function(x) gsub(" ", "\n", x))
+```
+#The two geom layers in this graph are bar and line.
+
+Create 3 histograms, with each histogram having different sized bins. Pick the “best” one and explain why it is the best.
+Make sure it’s clear what research question you are doing each operation for!
+```{r}
+
+
+# Create a histogram with default bin size
+default_bin_histogram <- cancer_sample %>%
+  ggplot(aes(x = fractal_dimension_worst)) +
+  geom_histogram(fill = "lightblue", color = "black") +
+  labs(title = "Histogram (Default Bin Size)") +
+  theme_minimal()
+
+# Create a histogram with default bin size
+smaller_bin_histogram <- cancer_sample %>%
+  ggplot(aes(x = fractal_dimension_worst)) +
+  geom_histogram(binwidth = 0.01, fill = "lightblue", color = "black") +
+  labs(title = "Histogram (Smaller Bins)") +
+  theme_minimal()
+
+# Create a histogram with larger bins
+larger_bin_histogram <- cancer_sample %>%
+  ggplot(aes(x = fractal_dimension_worst)) +
+  geom_histogram(binwidth = 0.1, fill = "lightblue", color = "black") +
+  labs(title = "Histogram (Larger Bins)") +
+  theme_minimal()
+
+# Arrange the plots side by side
+grid.arrange(default_bin_histogram, smaller_bin_histogram, larger_bin_histogram, ncol = 3)
+```
+#comment: The histogram with smaller bin is better. Because it is very clear to read.
+
+1.3 (2 points)
+Based on the operations that you’ve completed, how much closer are you to answering your research questions? Think about what aspects of your research questions remain unclear. Can your research questions be refined, now that you’ve investigated your data a bit more? Which research questions are yielding interesting results?
+
+#Many of the operations are not related to my research questions, yet they do more analysis on the dataset 
+# which helps in improving understanding about the dataset. Consequently, my research questions seem more refinable. So far these two research questions yield interesting results:
+#1.    How does the distribution of the “flow” variable change in every 10
+    years in the “flow_sample” dataset? This will break the year date to
+    every decade(ten years).This might involve using group_by(), select,
+    count(),summary() and pipe functions, including ggplot()
+
+#2    How is the difference in year of registration for different property-type 
+   using apt_building dataset ? This might involve filter(), group_by(), 
+    summarise(), and geom-boxplot
+
+
+Task 2: Tidy your data
+In this task, we will do several exercises to reshape our data. The goal here is to understand how to do this reshaping with the tidyr package.
+
+A reminder of the definition of tidy data:
+
+Each row is an observation
+Each column is a variable
+Each cell is a value
+
+2.1 (2 points)
+Based on the definition above, can you identify if your data is tidy or untidy? Go through all your columns, or if you have >8 variables, just pick 8, and explain whether the data is untidy or tidy.
+#The dataset "cancer_sample" considering the variables "diagnosis" , "radius_mean" ,"texture_mean"      , "perimeter_mean" ,  "area_mean" ,  "smoothness_mean" , "compactness_mean" , and "concavity_mean"  is tidy by ensuring each row represents unique observations, each column represents a distinct variable, and each cell contains a particular value   
+
+
+2.2 (4 points)
+Now, if your data is tidy, untidy it! Then, tidy it back to it’s original state.
+If your data is untidy, then tidy it! Then, untidy it back to it’s original state.
+
+Be sure to explain your reasoning for this task. Show us the “before” and “after”.
+#BEFORE
+```{r}
+head(flow_sample)
+
+#Untidying the dataset flow_sample
+untidy_flow_sample <- flow_sample %>%
+  unite(year_month, year, month, sep = "_", remove = TRUE)
+
+# Print the untidy dataset
+head(untidy_flow_sample)
+```
+
+#tidying it back to its original state.
+#AFTER
+```{r}
+head(untidy_flow_sample)
+
+tidy_data <- untidy_flow_sample %>%
+  separate(year_month, into = c("year", "month"), sep = "_", convert = TRUE) %>%
+  select(station_id, year, extreme_type, month, day, flow, sym)
+
+# Print the original tidy dataset
+head(tidy_data)
+```
+#I did tidy it to its original state because that is the format i need it for my research question.
+
+
+2.3 (4 points)
+Now, you should be more familiar with your data, and also have made progress in answering your research questions. Based on your interest, and your analyses, pick 2 of the 4 research questions to continue your analysis in the remaining tasks:
+
+#1.  How does the distribution of the “flow” variable change in every 10
+    years in the “flow_sample” dataset? This will break the year date to
+    every decade(ten years).This might involve using group_by(), select,
+    count(),summarize() and pipe functions, including ggplot()
+  
+    
+#2.    How is the difference in year of registration for different property-
+type? for the "apt_buildings dataset". This might involve filter(), group_by(),
+summarise(), and geom-boxplot.
+
+
+Explain your decision for choosing the above two research questions.
+#Decision 1: It makes us identify the long term trends in term of consistent 
+#pattern or shift in the datasets that prompt decision making for findings by
+#stakeholders. 
+
+#Decision 2: We get to understand market dynamics better as we determine if 
+#certain property type tend to register earlier or later than other ones
+
+Now, try to choose a version of your data that you think will be appropriate to answer these 2 questions. Use between 4 and 8 functions that we’ve covered so far (i.e. by filtering, cleaning, tidy’ing, dropping irrelevant columns, etc.).
+(If it makes more sense, then you can make/pick two versions of your data, one for each research question.)
+
+
+#1.  How does the distribution of the “flow” variable change in every 10
+    years in the “flow_sample” dataset? This will break the year date to
+    every decade(ten years).This might involve using group_by(), select,
+    count(),summarize() and pipe functions, including ggplot()
+```{r}
+#Task - 1 (summarizing).
+head(grouped_flow)
+
+flow_year_grouped <- grouped_flow %>%
+ mutate(grouped_year = paste0(floor((year - 1) / 10) * 10 + 1, "-", floor((year - 1) / 10) * 10 + 10)) %>%
+  group_by(grouped_year) %>%
+  summarise(flow_count = sum(flow, na.rm = TRUE))
+
+flow_year_grouped
+
+#Task -2 (graphing)
+ggplot(flow_year_grouped, aes(x = grouped_year, y = flow_count)) +
+  geom_bar(stat = "identity", fill = "lightblue") +
+  labs(x = "Year Grouped", y = "Flow Count", title = "Flow Count by Year Grouped") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_x_discrete(labels = function(x) gsub(" ", "\n", x))  # To make x-axis labels become more readable
+```
+#comment: The chart enables us to visualize how flow behaves in every ten years. 
+#The year range 1911 - 1920 had the highest flow count.
+
+
+
+#2.    How is the difference in year of registration for different property-
+type? for the "apt_buildings dataset". This might involve filter(), group_by(),
+summarise(), and geom-boxplot.
+```{r}
+
+apt_buildings_new <- apt_buildings %>%
+  mutate(year_difference = year_registered - year_built ) %>%
+  select(id, year_built, year_registered, year_difference, everything())
+#variable was defined in milestone 1.
+
+apt_buildings_new %>%
+  filter(property_type %in% c("PRIVATE", "TCHC", "SOCIAL HOUSING")) %>%
+  na.omit() %>%
+  ggplot(aes(x = property_type, y = year_difference, fill = property_type)) +
+  geom_boxplot() +
+  labs(x = "Property Type", y = "Year Difference") +
+  ggtitle("Relationship Between Property Type and Year-Difference") 
+
+#Task 2 (Summarizing)
+filtered_data <- apt_buildings_new %>%
+  filter(property_type %in% c("PRIVATE", "TCHC", "SOCIAL HOUSING")) %>%
+  na.omit()
+
+# using a single pipeline i calculate statistics 
+summary_stats <- filtered_data %>%
+  group_by(property_type) %>%
+  summarize(
+    median = median(year_difference),
+    range = max(year_difference) - min(year_difference)
+  )
+
+# Print the summary statistics
+print(summary_stats)
+```
+#It takes much years of 48 (median) for private property-type to register house 
+#even though the spread(range) - 105 is high.
+#But social housing takes 25 years to register although the variation/spread is 
+#the highest.
+
+Task 3: Modelling
+3.0 (no points)
+Pick a research question from 1.2, and pick a variable of interest (we’ll call it “Y”) that’s relevant to the research question. Indicate these.
+
+Research Question: What is the form of relationship - positive or negative - 
+between the fractal_dimension_mean and compactness_mean using
+“cancer_sample”? This might attract coding for fitting regression line.
+
+Variable of interest: fractal_dimension_mean
+
+3.1 (3 points)
+Fit a model or run a hypothesis test that provides insight on this variable with respect to the research question. Store the model object as a variable, and print its output to screen. We’ll omit having to justify your choice, because we don’t expect you to know about model specifics in STAT 545.
+
+You could fit a model that makes predictions on Y using another variable, by using the lm() function.
+You could test whether the mean of Y equals 0 using t.test(), or maybe the mean across two groups are different using t.test(), or maybe the mean across multiple groups are different using anova() (you may have to pivot your data for the latter two).
+You could use lm() to test for significance of regression coefficients.
+```{r}
+regn <- cancer_sample %>%
+  lm(fractal_dimension_mean ~ compactness_mean,.)
+
+fractal <- tidy(regn)  %>%
+  mutate_if(is.numeric, round, 3)
+print(fractal)
+```
+#With p-value < 0.05 means the regression coefficient is significant
+
+
+```{r}
+# Calculating the t-test on "fractal_dimension_mean"
+t_test_result <- t.test(cancer_sample$fractal_dimension_mean, mu = 0)
+
+# Print the t-test result
+print(t_test_result) 
+```
+#With p-value < 0.05 means the mean of Y (fractal_dimension_mean) is not equal 0
+
+
+Note: It’s OK if you don’t know how these models/tests work. Here are some examples of things you can do here, but the sky’s the limit.
+
+
+3.2 (3 points)
+Produce something relevant from your fitted model: either predictions on Y, or a single value like a regression coefficient or a p-value.
+Be sure to indicate in writing what you chose to produce.
+```{r}
+#printing estimate for intercept and regression coefficient
+print(fractal$estimate)
+```
+#  A change of 1 compactness_mean in the cancer tumor is associated with an 
+#  increase of  0.076 in its fractal_mean_worst
+ 
+
+Your code should either output a tibble (in which case you should indicate the column that contains the thing you’re looking for), or the thing you’re looking for itself.
+```{r}
+#Applying broom::augment()
+regn_tibble <- augment(regn)
+print(regn_tibble$.resid) #printing residuals
+```
+
+Obtain your results using the broom package if possible. If your model is not compatible with the broom function you’re needing, then you can obtain your results by some other means, but first indicate which broom function is not compatible.
+```{r}
+#Applying broom::glance()
+regn_broom <- glance(regn)
+print(regn_broom) #printing summary statistics
+```
+
+
+Task 4: Reading and writing data
+Get set up for this exercise by making a folder called output in the top level of your project folder / repository. You’ll be saving things there.
+
+4.1 (3 points)
+Take a summary table that you made from Task 1, and write it as a csv file in your output folder. Use the here::here() function.
+
+Robustness criteria: You should be able to move your Mini Project repository / project folder to some other location on your computer, or move this very Rmd file to another location within your project repository / folder, and your code should still work.
+Reproducibility criteria: You should be able to delete the csv file, and remake it simply by knitting this Rmd file.
+```{r}
+write_csv(summary_stats, here("Output", "summary_stat.csv"))
+```
+
+
+4.2 (3 points)
+Write your model object from Task 3 to an R binary file (an RDS), and load it again. Be sure to save the binary file in your output folder. Use the functions saveRDS() and readRDS().
+```{r}
+saveRDS(fractal, here("Output", "fractal_object3.1.rds"))
+loaded_model <- readRDS(here("Output", "fractal_object3.1.rds"))
+```
+
+The same robustness and reproducibility criteria as in 4.1 apply here.
+Overall Reproducibility/Cleanliness/Coherence Checklist
+Here are the criteria we’re looking for.
+
+Coherence (0.5 points)
+The document should read sensibly from top to bottom, with no major continuity errors.
+
+The README file should still satisfy the criteria from the last milestone, i.e. it has been updated to match the changes to the repository made in this milestone.
+
+File and folder structure (1 points)
+You should have at least three folders in the top level of your repository: one for each milestone, and one output folder. If there are any other folders, these are explained in the main README.
+
+Each milestone document is contained in its respective folder, and nowhere else.
+
+Every level-1 folder (that is, the ones stored in the top level, like “Milestone1” and “output”) has a README file, explaining in a sentence or two what is in the folder, in plain language (it’s enough to say something like “This folder contains the source for Milestone 1”).
+
+Output (1 point)
+All output is recent and relevant:
+
+All Rmd files have been knitted to their output md files.
+All knitted md files are viewable without errors on Github. Examples of errors: Missing plots, “Sorry about that, but we can’t show files that are this big right now” messages, error messages from broken R code
+All of these output files are up-to-date – that is, they haven’t fallen behind after the source (Rmd) files have been updated.
+There should be no relic output files. For example, if you were knitting an Rmd to html, but then changed the output to be only a markdown file, then the html file is a relic and should be deleted.
+Our recommendation: delete all output files, and re-knit each milestone’s Rmd file, so that everything is up to date and relevant.
+
+Tagged release (0.5 point)
+You’ve tagged a release for Milestone 2.
+
+Attribution
+Thanks to Victor Yuan for mostly putting this together.
+
+Powered by the Academic theme for Hugo.
